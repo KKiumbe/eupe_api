@@ -25,7 +25,7 @@ const permissionsRoutes = require('./routes/permision/permissionRoute.js')
 const createTask = require('./routes/task/taskRoute.js')
 
 const app = express();
-const PORT = 3000;
+const PORT = 4000;
 
 app.use(cookieParser());
 //app.use(verifyToken);
@@ -41,23 +41,23 @@ app.use(cors({
 
 
 // Use customer routes
-app.use('/core', customerRoutes);
-app.use('/core', userRoutes);
-app.use('/core', sendSmsRoute);
-app.use('/core', invoiceRoutes);
-app.use('/core', mpesaRoute);
-app.use('/core', collectionRoute);
-app.use('/core', receiptRoute);
-app.use('/core', paymentRoute);
-app.use('/core', statsRoute);
-app.use('/core', statsms);
-app.use('/core', uploadcustomers); 
-app.use('/core', customerdetailsRoute); 
-app.use('/core', smsBalanceRoute); 
-app.use('/core', reportsReoute); 
-app.use('/core', userManagementRoute); 
-app.use('/core', permissionsRoutes);
-app.use('/core', createTask);
+app.use('/eupe', customerRoutes);
+app.use('/eupe', userRoutes);
+app.use('/eupe', sendSmsRoute);
+app.use('/eupe', invoiceRoutes);
+app.use('/eupe', mpesaRoute);
+app.use('/eupe', collectionRoute);
+app.use('/eupe', receiptRoute);
+app.use('/eupe', paymentRoute);
+app.use('/eupe', statsRoute);
+app.use('/eupe', statsms);
+app.use('/eupe', uploadcustomers); 
+app.use('/eupe', customerdetailsRoute); 
+app.use('/eupe', smsBalanceRoute); 
+app.use('/eupe', reportsReoute); 
+app.use('/eupe', userManagementRoute); 
+app.use('/eupe', permissionsRoutes);
+app.use('/eupe', createTask);
 
 
 // Start the HTTP server
