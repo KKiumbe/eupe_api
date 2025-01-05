@@ -6,6 +6,8 @@ const prisma = new PrismaClient();
 
 const ENDPOINT = process.env.BULK_SMS_ENDPOINT;
 const SMS_BALANCE_URL = process.env.SMS_BALANCE_URL; // URL for checking SMS balance
+const paybill = process.env.PAYBILL;
+const customerSupport =  process.env.CUSTOMER_SUPPORT;
 
 // Function to check SMS balance
 const checkSmsBalance = async () => {
@@ -112,7 +114,7 @@ const sendUnpaidCustomers = async (req, res) => {
 
         const customersWithMessages = unpaidCustomers.map(customer => ({
             ...customer,
-            message: `Dear ${customer.firstName}, you have an outstanding balance of ${customer.closingBalance.toFixed(2)}. Help us serve you better by always paying on time. Paybill No: 4107197, use your phone number as the account number. Customer support: 0726594923`,
+            message: `Dear ${customer.firstName}, you have an outstanding balance of ${customer.closingBalance.toFixed(2)}. Help us serve you better by always paying on time. Paybill No:${paybill}, use your phone number as the account number. Customer support: ${customerSupport}`,
         }));
 
         const balance = await checkSmsBalance(); // Check balance before sending
@@ -152,7 +154,7 @@ const sendLowBalanceCustomers = async (req, res) => {
 
         const customersWithMessages = lowBalanceCustomers.map(customer => ({
             ...customer,
-            message: `Dear ${customer.firstName}, your balance is ${customer.closingBalance.toFixed(2)}. Help us serve you better by always paying on time. Paybill No: 4107197, use your phone number as the account number. Customer support: 0726594923.`,
+            message: `Dear ${customer.firstName}, your balance is ${customer.closingBalance.toFixed(2)}. Help us serve you better by always paying on time. Paybill No: ${paybill}, use your phone number as the account number. Customer support: ${customerSupport}.`,
         }));
 
         const balance = await checkSmsBalance(); // Check balance before sending
@@ -192,7 +194,7 @@ const sendHighBalanceCustomers = async (req, res) => {
 
         const customersWithMessages = highBalanceCustomers.map(customer => ({
             ...customer,
-            message: `Dear ${customer.firstName}, your current balance is ${customer.closingBalance.toFixed(2)}, which is quite high. Help us serve you better by always paying on time. Paybill No: 4107197, use your phone number as the account number. Customer support: 0726594923`,
+            message: `Dear ${customer.firstName}, your current balance is ${customer.closingBalance.toFixed(2)}, Avoid service disruption by settling the bill immediately. Paybill No: ${paybill}, use your phone number as the account number. Customer support: ${customerSupport}`,
         }));
 
         const balance = await checkSmsBalance(); // Check balance before sending

@@ -3,6 +3,9 @@ const { sendSMS } = require('../sms/smsController');
 
 const prisma = new PrismaClient();
 
+const paybill = process.env.PAYBILL;
+const customerSupport =  process.env.CUSTOMER_SUPPORT;
+
 function generateReceiptNumber() {
     const randomDigits = Math.floor(10000 + Math.random() * 90000);
     return `RCPT${randomDigits}`;
@@ -86,7 +89,7 @@ const manualCashPayment = async (req, res) => {
                 : `KES ${newClosingBalance}`;
 
             const message = `Dear ${customer.firstName}, payment of KES ${totalAmount} received successfully. ` +
-                `Your balance is ${balanceMessage}. Help us serve you better by using Paybill No: , your phone number as the account number. Customer support: .`;
+                `Your balance is ${balanceMessage}. Help us serve you better by paying via Paybill No:${paybill}, your phone number is the account number.Inquiries?Call :${customerSupport} .`;
 
                 const mobile = customer.phoneNumber;
 
@@ -154,7 +157,7 @@ const manualCashPayment = async (req, res) => {
             ? `an overpayment of KES ${Math.abs(newClosingBalance)}`
             : `KES ${newClosingBalance}`;
         const message = `Dear ${customer.firstName}, payment of KES ${totalAmount} received successfully. ` +
-            `Your balance is ${balanceMessage}. Help us serve you better by using Paybill No: 4107197, your phone number as the account number. Customer support: 0726594923.`;
+            `Your balance is ${balanceMessage}. Help us serve you better by always paying via Paybill No:${paybill},your phone number as the account number. Customer support: ${customerSupport}.`;
             const mobile = customer.phoneNumber;
 
             await sendSMS(mobile, message);

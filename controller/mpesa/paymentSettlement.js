@@ -3,6 +3,8 @@ const { sendSMS } = require('../sms/smsController');
 
 
 const prisma = new PrismaClient();
+const paybill = process.env.PAYBILL;
+const customerSupport =  process.env.CUSTOMER_SUPPORT;
 
 async function generateUniqueReceiptNumber() {
     let receiptNumber;
@@ -152,7 +154,7 @@ async function settleInvoice() {
                     const balanceMessage = finalClosingBalance < 0
                         ? `an overpayment of KES ${Math.abs(finalClosingBalance)}`
                         : `KES ${finalClosingBalance}`;
-                    const message = `Dear ${customer.firstName}, payment of KES ${paymentAmount} received successfully. Your balance is ${balanceMessage}. Thank you for your payment.`;
+                    const message = `Dear ${customer.firstName}, payment of KES ${paymentAmount} received successfully. Your balance is ${balanceMessage}. Thank you for your payment. Inquiries? Call : ${customerSupport}`;
                     await sendSMS(customer.phoneNumber, message);
 
                     console.log('SMS sent to customer.');

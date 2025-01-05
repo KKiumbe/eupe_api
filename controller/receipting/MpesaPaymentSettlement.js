@@ -14,6 +14,8 @@ const PARTNER_ID = process.env.PARTNER_ID;
 const SHORTCODE = process.env.SHORTCODE;
 const SMS_ENDPOINT = process.env.SMS_ENDPOINT;
 const SMS_BALANCE_URL = process.env.SMS_BALANCE_URL;
+const paybill = process.env.PAYBILL;
+const customerSupport =  process.env.CUSTOMER_SUPPORT;
 
 
 function generateReceiptNumber() {
@@ -153,7 +155,7 @@ const MpesaPaymentSettlement = async (req, res) => {
             const balanceMessage = finalClosingBalance < 0
                 ? `Your closing balance is an overpayment of KES ${Math.abs(finalClosingBalance)}`
                 : `Your closing balance is KES ${finalClosingBalance}`;
-            const message = `Dear ${customer.firstName}, payment of KES ${totalAmount} for garbage collection services received successfully. ${balanceMessage}. Always use your phone number as the account number, Thank you!`;
+            const message = `Dear ${customer.firstName}, WHILE PAYING FOR GARBAGE,always use your phone number as the accoount number. We have received your  payment of KES ${totalAmount}. ${balanceMessage}.Inquiries? call : ${customerSupport}`;
            //const mobile = customer.phoneNumber;
 
            const mobile = customer.phoneNumber;

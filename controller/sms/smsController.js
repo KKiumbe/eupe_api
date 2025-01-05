@@ -11,6 +11,9 @@ const SMS_ENDPOINT = process.env.SMS_ENDPOINT;
 const BULK_SMS_ENDPOINT = process.env.BULK_SMS_ENDPOINT;
 const SMS_BALANCE_URL = process.env.SMS_BALANCE_URL;
 
+const paybill = process.env.PAYBILL;
+const customerSupport =  process.env.CUSTOMER_SUPPORT;
+
 const checkSmsBalance = async () => {
   try {
     const response = await axios.post(SMS_BALANCE_URL, {
@@ -148,7 +151,7 @@ const sendBills = async (req, res) => {
     });
 
     const messages = activeCustomers.map((customer) => {
-      const message = `Dear ${customer.firstName}, your current balance is KES ${customer.closingBalance}. Your current Month bill is ${customer.monthlyCharge} Thank you for being a loyal customer.`;
+      const message = `Dear ${customer.firstName},your current balance is KES ${customer.closingBalance}. Your current Month bill is ${customer.monthlyCharge}.Use paybill No:${paybill};your phone number,is the account number.Inquiries? call:${customerSupport}.Thank you for being a loyal customer.`;
       return { phoneNumber: customer.phoneNumber, message };
     });
 
@@ -207,8 +210,7 @@ const sendBill = async (req, res) => {
     }
 
     // Prepare the message
-    const message = `Dear ${customer.firstName}, your current bill for this month is KES ${customer.monthlyCharge}. Your current balance is KES ${customer.closingBalance}. Thank you!`;
-
+    const message = `Dear ${customer.firstName}, your current balance is KES ${customer.closingBalance}. Your current Month bill is ${customer.monthlyCharge}.Use paybill No :${paybill} ;your phone number is the account number.Inquiries? call: ${customerSupport}.Thank you for being a loyal customer.`;
     // Call sendSms with an array
     const smsResponses = await sendSms([
       { phoneNumber: customer.phoneNumber, message },
@@ -237,7 +239,11 @@ const sendBillPerDay = async (req, res) => {
 
     const messages = customers.map((customer) => ({
       phoneNumber: customer.phoneNumber,
-      message: `Dear ${customer.firstName}, your garbage collection day is ${day}. Please ensure timely payment.`,
+
+     message : `Dear ${customer.firstName}, your current balance is KES ${customer.closingBalance}. Your current Month bill is ${customer.monthlyCharge}.Use paybill No :${paybill} ;your phone number is the account number.Inquiries? call: ${customerSupport}.Thank you for being a loyal customer.`
+
+
+      ,
     }));
 
     const smsResponses = await sendSms(messages);
@@ -248,6 +254,117 @@ const sendBillPerDay = async (req, res) => {
     res.status(500).json({ error: 'Failed to send bill per day.' });
   }
 };
+
+
+
+
+const billReminderPerDay = async (req, res) => {
+  const { day } = req.body;
+
+  if (!day) {
+    return res.status(400).json({ error: 'Day is required.' });
+  }
+
+  try {
+    // Fetch active customers with a closingBalance less than monthlyCharge for the specified day
+    const customers = await prisma.customer.findMany({
+      where: {
+        garbageCollectionDay: day.toUpperCase(),
+        status: 'ACTIVE', // Ensure customer is active
+        closingBalance: { lt: prisma.customer.monthlyCharge }, // Check if closingBalance is less than monthlyCharge
+      },
+    });
+
+    if (customers.length === 0) {
+      return res.status(200).json({ message: 'No customers to notify for the given day.' });
+    }
+
+    // Prepare SMS messages
+    const messages = customers.map((customer) => ({
+      phoneNumber: customer.phoneNumber,
+      message: `Dear ${customer.firstName}, your garbage collection is scheduled today. Please pay immediately to avoid service disruption. Use Paybill ${paybill}, and your phone number as the account number. Inquiries? Call ${customerSupport}.`,
+
+
+    }));
+
+    // Send SMS using the sendSms service
+    const smsResponses = await sendSms(messages);
+
+    // Respond with success message
+    res.status(200).json({ message: 'Bill reminders sent for the day successfully.', smsResponses });
+  } catch (error) {
+    console.error('Error sending bill reminder per day:', error);
+    res.status(500).json({ error: 'Failed to send bill reminders per day.' });
+  }
+};
+
+
+const billReminderForAll = async (req, res) => {
+  try {
+    // Fetch all active customers with a closingBalance less than monthlyCharge
+    const customers = await prisma.customer.findMany({
+      where: {
+        status: 'ACTIVE', // Ensure customer is active
+        closingBalance: { lt: prisma.customer.monthlyCharge }, // Check if closingBalance is less than monthlyCharge
+      },
+    });
+
+    if (customers.length === 0) {
+      return res.status(200).json({ message: 'No customers to notify.' });
+    }
+
+    // Prepare SMS messages
+    const messages = customers.map((customer) => ({
+      phoneNumber: customer.phoneNumber,
+      message: `Dear ${customer.firstName},you have a pending balance of $${customer.closingBalance},Help us server you better by settling your bill.Pay via ${paybill}, your phone is the the account number `,
+    }));
+
+    // Send SMS using the sendSms service
+    const smsResponses = await sendSms(messages);
+
+    // Respond with success message
+    res.status(200).json({ message: 'Bill reminders sent to all customers successfully.', smsResponses });
+  } catch (error) {
+    console.error('Error sending bill reminders for all customers:', error);
+    res.status(500).json({ error: 'Failed to send bill reminders for all customers.' });
+  }
+};
+
+
+
+const harshBillReminder = async (req, res) => {
+  try {
+    // Fetch active customers with a closingBalance greater than 2x their monthlyCharge
+    const customers = await prisma.customer.findMany({
+      where: {
+        status: 'ACTIVE', // Only active customers
+        closingBalance: { gt: { multiply: prisma.customer.monthlyCharge, factor: 2 } }, // Closing balance > 2x monthly charge
+      },
+    });
+
+    if (customers.length === 0) {
+      return res.status(200).json({ message: 'No customers with significant overdue balances.' });
+    }
+
+    // Prepare harsher SMS messages
+    const messages = customers.map((customer) => ({
+      phoneNumber: customer.phoneNumber,
+      message: `Dear ${customer.firstName}, Please settle your pending bill of ${customer.closingBalance}. Immediate action is required to avoid service disruption. Pay via ${paybill}, your phone is the the account number`,
+    }));
+
+    // Send SMS using the sendSms service
+    const smsResponses = await sendSms(messages);
+
+    // Respond with success message
+    res.status(200).json({ message: 'Harsh bill reminders sent to customers with high balances.', smsResponses });
+  } catch (error) {
+    console.error('Error sending harsh bill reminders:', error);
+    res.status(500).json({ error: 'Failed to send harsh bill reminders.' });
+  }
+};
+
+
+
 
 // Send SMS to a group of customers
 const sendToGroup = async (req, res) => {
@@ -303,5 +420,8 @@ module.exports = {
   sendBillPerDay,
   sendToGroup,
   sendSMS,
-  sendToOne
+  sendToOne,
+  billReminderPerDay,
+  billReminderForAll,
+  harshBillReminder
 };
