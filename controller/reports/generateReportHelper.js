@@ -16,11 +16,11 @@ function generatePDF(groupedByCollectionDay, filePath, reportTitle) {
     doc.pipe(writeStream);
 
     // Add the header
-    const logoPath = path.join(__dirname, '..', 'assets', 'icon.png'); // Adjust the path to your logo
+    const logoPath = path.join(__dirname, '..', 'assets', 'eupe.jpeg'); // Adjust the path to your logo
     doc.image(logoPath, 50, 45, { width: 100 })
-      .fontSize(20).text('TAQa MALI', 160, 50)
-      .fontSize(10).text('KISERIAN, NGONG, RONGAI, MATASIA', 160, 80)
-      .fontSize(10).text('For all inquiries, Call 0726594923', 160, 110).moveDown();
+      .fontSize(20).text('EUPE BIN & CLEANING SERVICES', 160, 50)
+      .fontSize(10).text('Mishael Plaza, G4,Ground Floor, Kamiti Rd', 160, 80)
+      .fontSize(10).text('For all inquiries, Call 0708319900', 160, 110).moveDown();
 
     doc.moveTo(50, 120).lineTo(550, 120).stroke();
     doc.fontSize(18).text(reportTitle, { align: 'center' }).moveDown();

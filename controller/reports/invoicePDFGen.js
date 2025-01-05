@@ -36,14 +36,14 @@ async function generateInvoicePDF(invoiceId) {
     doc.pipe(writeStream);
 
     // Company Details with Logo
-    const logoPath = path.join(__dirname, '..', 'assets', 'icon.png'); // Ensure this path is correct
+    const logoPath = path.join(__dirname, '..', 'assets', 'eupe.jpeg'); // Ensure this path is correct
     doc.image(logoPath, 50, 45, { width: 100 })
       .fontSize(20)
-      .text('TAQA MALI', 160, 50)
+      .text('EUPE BIN & CLEANING SERVICES', 160, 50)
       .fontSize(10)
-      .text('KISERIAN.NGONG.RONGAI.MATASIA', 160, 80)
-      .text('For inquiries Call: 0726594923', 160, 110)
-      .text('Email: ngugisj@gmail.com', 160, 125)
+      .text('Mishael Plaza, G4,Ground Floor, Kamiti Rd', 160, 80)
+      .text('For inquiries Call: 0708319900', 160, 110)
+      .text('Email: eupebinandcleaning@gmail.com', 160, 125)
       .moveDown();
 
     // Divider line

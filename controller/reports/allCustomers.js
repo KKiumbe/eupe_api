@@ -67,16 +67,16 @@ function generatePDF(groupedByCollectionDay, filePath) {
     doc.pipe(writeStream);
 
     // Load the company logo
-    const logoPath = path.join(__dirname, '..', 'assets', 'icon.png');
+    const logoPath = path.join(__dirname, '..', 'assets', 'eupe.jpeg');
 
     // Add the Company Logo and Name at the top
     doc.image(logoPath, 50, 45, { width: 100 }) // Adjust position and size as needed
       .fontSize(20)
-      .text('TAQa MALI ', 160, 50) // Position name next to logo
+      .text('EUPE BIN & CLEANING SERVICES', 160, 50) // Position name next to logo
       .fontSize(10)
-      .text('KISERIAN, NGONG, RONGAI, MATASIA,', 160, 80)
+      .text('Mishael Plaza, G4,Ground Floor, Kamiti Rd', 160, 80)
       .fontSize(10)
-      .text('For all the inquiries, Call 0726594923, We help you Conserve and Protect the environment', 160, 110)
+      .text('For all the inquiries, Call 0708319900, We help you Conserve and Protect environment', 160, 110)
       .moveDown();
 
     // Add a straight divider line after the header
