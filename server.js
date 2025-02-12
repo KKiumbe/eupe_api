@@ -23,9 +23,12 @@ const cookieParser = require('cookie-parser');
 
 const permissionsRoutes = require('./routes/permision/permissionRoute.js')
 const createTask = require('./routes/task/taskRoute.js')
+const mailerRoute = require('./routes/mailer/mailRoute.js')
 
 const app = express();
-const PORT = 4000;
+const PORT = process.env.SERVER_PORT;
+
+console.log(`this is the port ${PORT}`);
 
 app.use(cookieParser());
 //app.use(verifyToken);
@@ -58,11 +61,18 @@ app.use('/eupe', reportsReoute);
 app.use('/eupe', userManagementRoute); 
 app.use('/eupe', permissionsRoutes);
 app.use('/eupe', createTask);
+app.use('/eupe', mailerRoute);
 
 
 // Start the HTTP server
 const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is running on:${PORT}`);
+  console.log(`Server is running on port : ${PORT}`);
+});
+
+
+const timeoutDuration = 90000; // Set timeout duration in milliseconds (e.g., 60000 ms = 60 seconds)
+server.setTimeout(timeoutDuration, () => {
+  console.log(`Server timed out after ${timeoutDuration / 9000} seconds.`);
 });
 
 

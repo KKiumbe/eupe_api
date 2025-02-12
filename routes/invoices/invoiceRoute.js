@@ -1,6 +1,6 @@
 const express = require('express');
 const { verifyToken } = require('../../middleware/verifyToken.js');
-const { getAllInvoices, generateInvoices, cancelInvoiceById, createInvoice, getInvoiceDetails, generateInvoicesByDay } = require('../../controller/bill/billGenerator.js');
+const { getAllInvoices, generateInvoices, cancelInvoiceById, createInvoice, getInvoiceDetails, generateInvoicesByDay, generateInvoicesByMonth } = require('../../controller/bill/billGenerator.js');
 const { SearchInvoices } = require('../../controller/bill/searchInvoice.js');
 const { addSmsJob } = require('../../controller/bulkSMS/sendSMSJob.js');
 const { cancelSystemGenInvoices } = require('../../controller/bill/cancelJob.js');
@@ -32,6 +32,17 @@ router.post('/invoices-generate-day',checkAccess('Invoice','create'), generateIn
 
 // Route to cancel system-generated invoices for a specific customer and month
 router.patch('/invoices/cancel',checkAccess('Invoice','update'), cancelSystemGenInvoices);
+
+router.post('/generate-invoices-by-month', async (req, res) => {
+    try {
+      const { month } = req.body; // Get the month from the request body
+      const invoices = await generateInvoicesByMonth(month);
+      res.status(200).json({ message: 'Invoices generated successfully', invoices });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+  
 
 
 module.exports = router;
