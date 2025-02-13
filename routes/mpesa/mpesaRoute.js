@@ -4,6 +4,7 @@ const { PrismaClient } = require('@prisma/client'); // Ensure you have Prisma Cl
 const { lipaNaMpesa } = require('../../controller/mpesa/payment.js');
 const prisma = new PrismaClient(); // Create a single instance of PrismaClient
 const { settleInvoice } = require('../../controller/mpesa/paymentSettlement.js');
+const { sendsms } = require('../../controller/sms/smsController.js');
 
 // Route to handle M-Pesa callback notifications
 router.post('/callback', async (req, res) => {
