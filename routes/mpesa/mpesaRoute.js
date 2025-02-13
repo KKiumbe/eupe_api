@@ -56,6 +56,13 @@ router.post('/callback', async (req, res) => {
         // Trigger invoice settlement process
         await settleInvoice(); // Ensure settleInvoice is correctly implemented to process invoices
 
+        const message = `Hello ${paymentInfo.FirstName}, we have received your payment of KES ${paymentInfo.TransAmount}. Thank you for your payment!`;
+        const smsResponses = await sendsms( paymentInfo.ref, message );
+
+
+        console.log('SMS sent:', smsResponses);
+
+
         // Respond with a success message
         res.status(200).json({ message: 'Payment processed successfully.' });
     } catch (error) {
