@@ -3,6 +3,7 @@ const PDFDocument = require('pdfkit');
 const prisma = new PrismaClient();
 const fs = require('fs');
 const path = require('path');
+const { generatePDFHeader } = require('./header');
 
 // Controller function to get all active customers grouped by collection day
 async function getAllActiveCustomersReport(req, res) {
@@ -60,28 +61,18 @@ async function getAllActiveCustomersReport(req, res) {
 }
 
 // Helper function to generate the PDF report
-function generatePDF(groupedByCollectionDay, filePath) {
-  return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ margin: 50 });
-    const writeStream = fs.createWriteStream(filePath);
-    doc.pipe(writeStream);
+async function generatePDF(groupedByCollectionDay, filePath) {
+  const doc = new PDFDocument({ margin: 50 });
+  const writeStream = fs.createWriteStream(filePath);
+  doc.pipe(writeStream);
 
-    // Load the company logo
-    const logoPath = path.join(__dirname, '..', 'assets', 'eupe.jpeg');
-
-    // Add the Company Logo and Name at the top
-    doc.image(logoPath, 50, 45, { width: 100 }) // Adjust position and size as needed
-      .fontSize(20)
-      .text('EUPE BIN & CLEANING SERVICES', 160, 50) // Position name next to logo
-      .fontSize(10)
-      .text('Mishael Plaza, G4,Ground Floor, Kamiti Rd', 160, 80)
-      .fontSize(10)
-      .text('For all the inquiries, Call 0708319900, We help you Conserve and Protect environment', 160, 110)
-      .moveDown();
+  try {
+    // Await the header function
+    await generatePDFHeader(doc);
 
     // Add a straight divider line after the header
-    doc.moveTo(50, 120).lineTo(550, 120).stroke();
-
+   
+    doc.font('Helvetica');
     // Title for the report
     doc.fontSize(18).text('Weekly Active Customers Report', { align: 'center' });
     doc.moveDown();
@@ -166,11 +157,18 @@ function generatePDF(groupedByCollectionDay, filePath) {
 
     doc.end();
 
-    // Resolve or reject the promise based on stream events
-    writeStream.on('finish', resolve);
-    writeStream.on('error', reject);
-  });
+    // Await stream finish before returning
+    await new Promise((resolve, reject) => {
+      writeStream.on('finish', resolve);
+      writeStream.on('error', reject);
+    });
+
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    throw error;
+  }
 }
+
 
 module.exports = {
   getAllActiveCustomersReport,

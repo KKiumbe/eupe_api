@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const PDFDocument = require("pdfkit");
+const { generatePDFHeader } = require("./header.js");
 
 /**
  * Generate a PDF report for customers grouped by collection day.
@@ -9,21 +10,16 @@ const PDFDocument = require("pdfkit");
  * @param {string} reportTitle - Title of the report.
  * @returns {Promise<void>}
  */
-function generatePDF(groupedByCollectionDay, filePath, reportTitle) {
-  return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ margin: 50 });
-    const writeStream = fs.createWriteStream(filePath);
-    doc.pipe(writeStream);
+async function generatePDF(groupedByCollectionDay, filePath, reportTitle) {
+  const doc = new PDFDocument({ margin: 50 });
+  const writeStream = fs.createWriteStream(filePath);
+  doc.pipe(writeStream);
 
-    // Add the header
-    const logoPath = path.join(__dirname, '..', 'assets', 'eupe.jpeg'); // Adjust the path to your logo
-    doc.image(logoPath, 50, 45, { width: 100 })
-      .fontSize(20).text('EUPE BIN & CLEANING SERVICES', 160, 50)
-      .fontSize(10).text('Mishael Plaza, G4,Ground Floor, Kamiti Rd', 160, 80)
-      .fontSize(10).text('For all inquiries, Call 0708319900', 160, 110).moveDown();
+  try {
+    // Await the header function
+    await generatePDFHeader(doc);
 
-    doc.moveTo(50, 120).lineTo(550, 120).stroke();
-    doc.fontSize(18).text(reportTitle, { align: 'center' }).moveDown();
+    doc.fontSize(18).text(reportTitle, 100,180).moveDown();
 
     // Add grouped data to the PDF
     for (const [day, { count, customers, totalClosingBalance, monthlyTotal }] of Object.entries(groupedByCollectionDay)) {
@@ -50,10 +46,19 @@ function generatePDF(groupedByCollectionDay, filePath, reportTitle) {
     }
 
     doc.end();
-    writeStream.on('finish', resolve);
-    writeStream.on('error', reject);
-  });
+
+    // Return a promise that resolves when writing is done
+    await new Promise((resolve, reject) => {
+      writeStream.on('finish', resolve);
+      writeStream.on('error', reject);
+    });
+
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    throw error;
+  }
 }
+
 
 /**
  * Helper function to generate and send a PDF report for a specific category.

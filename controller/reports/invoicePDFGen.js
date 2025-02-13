@@ -2,10 +2,16 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 const { PrismaClient } = require('@prisma/client');
+const { generatePDFHeader } = require('./header.js');
+require('dotenv').config();
+
 
 const prisma = new PrismaClient();
 
 async function generateInvoicePDF(invoiceId) {
+
+  const tagline = process.env.TAGLINE;
+  const paymentDetails = process.env.PAYMENTDETAILS;
   try {
     // Fetch invoice and related data from the database
     const invoice = await prisma.invoice.findUnique({
@@ -36,33 +42,55 @@ async function generateInvoicePDF(invoiceId) {
     doc.pipe(writeStream);
 
     // Company Details with Logo
-    const logoPath = path.join(__dirname, '..', 'assets', 'eupe.jpeg'); // Ensure this path is correct
-    doc.image(logoPath, 50, 45, { width: 100 })
-      .fontSize(20)
-      .text('EUPE BIN & CLEANING SERVICES', 160, 50)
-      .fontSize(10)
-      .text('Mishael Plaza, G4,Ground Floor, Kamiti Rd', 160, 80)
-      .text('For inquiries Call: 0708319900', 160, 110)
-      .text('Email: eupebinandcleaning@gmail.com', 160, 125)
-      .moveDown();
+    await generatePDFHeader(doc);
 
+      
     // Divider line
-    doc.moveTo(50, 150).lineTo(550, 150).stroke();
+    //doc.moveTo(50, 150).lineTo(550, 150).stroke();
+
+
+ 
 
     // Title for the invoice
-    doc.fontSize(18).text('Invoice', { align: 'center' });
-    doc.moveDown();
+    doc.fontSize(18)
+    .font('NimbusSans-Bold') // Use the bold font
+    .fillColor('black')
+    .text('Invoice', 230,190,);
+
+// Draw underline manually
+doc.moveTo(230, 210)  // Start position (X, Y)
+   .lineTo(290, 210)  // End position (X, Y)
+   .stroke();
 
     // Format the invoice period
     const invoiceDate = new Date(invoice.invoicePeriod);
     const options = { month: 'long', year: 'numeric' };
     const formattedPeriod = invoiceDate.toLocaleDateString('en-US', options);
 
+
+const text = "Invoice to:";
+const x = 48;
+const y = 240;
+const textWidth = doc.widthOfString(text) + 25; // Add padding
+const textHeight = doc.currentLineHeight() + 22; // Add padding
+
     // Invoice Details
     doc.fontSize(12)
-      .text(`Invoice Period: ${formattedPeriod}`, { align: 'left' })
-      .text(`Invoice Date: ${invoice.invoicePeriod.toDateString()}`, { align: 'left' })
-      .text(`Customer: ${invoice.customer.firstName} ${invoice.customer.lastName}`, { align: 'left' })
+      .fillColor('black') 
+      .text(`Period: ${formattedPeriod}`,50,220 )
+      .text(`Date: ${invoice.invoicePeriod.toDateString()}`, 400,220)
+      .text(`Invoice Number: ${invoice.invoiceNumber.slice(0, 8)}`, 400,235)
+
+
+      .text(`Invoice to:`,50,240 )
+     
+      .moveDown()
+
+      doc.rect(x, y, textWidth, textHeight).stroke()
+
+
+
+      .text(`${invoice.customer.firstName} ${invoice.customer.lastName}`, { align: 'left' })
       .moveDown();
 
     // Format the opening balance and closing balance
@@ -74,24 +102,33 @@ async function generateInvoicePDF(invoiceId) {
       : `Closing Balance: KSH${closingBalance.toFixed(2)}`;
 
     // Add opening balance
-    doc.text(formattedOpeningBalance, { align: 'left' }).moveDown();
+    doc.text(formattedOpeningBalance, { align: 'left' })
+    .moveDown()
+    .moveDown();
 
-    // Add table headers for invoice items
-    doc.text('Description', 50, doc.y, { width: 150, continued: true })
-      .text('Quantity', 250, doc.y, { width: 50, continued: true })
-      .text('Amount', 330, doc.y, { width: 100, continued: true })
-      .moveDown();
-
+    let startY = doc.y;
+    doc.font('Helvetica-Bold'); // Make headers bold
+    doc.text('Description', 50, startY, { width: 150 });
+    doc.text('Quantity', 250, startY, { width: 70, align: 'right' });
+    doc.text('Amount', 450, startY, { width: 70, align: 'right' });
+    
     // Add horizontal line below headers
-    doc.moveTo(50, doc.y - 5).lineTo(550, doc.y - 5).stroke();
+    doc.moveTo(50, startY + 15).lineTo(550, startY + 15).stroke();
+    
+    // Move Y position down for items
     doc.moveDown();
-
+    
+    // Reset font to normal
+    doc.font('Helvetica');
+    
     // Add each invoice item
     invoice.items.forEach(item => {
-      doc.text(item.description, 50, doc.y, { width: 150, continued: true })
-        .text(item.quantity.toString(), 270, doc.y, { width: 50, continued: true })
-        .text(`KSH${item.amount.toFixed(2)}`, 360, doc.y, { width: 100, continued: true })
-        .moveDown();
+      let itemY = doc.y;
+      doc.text(item.description, 50, itemY, { width: 150 });
+      doc.text(item.quantity.toString(), 250, itemY, { width: 70, align: 'right' });
+      doc.text(`KSH ${item.amount.toFixed(2)}`, 450, itemY, { width: 70, align: 'right' });
+    
+      doc.moveDown();
     });
 
     // Calculate and add the total amount
@@ -102,6 +139,14 @@ async function generateInvoicePDF(invoiceId) {
     // Add the closing balance at the end in bold
     doc.moveDown();
     doc.fontSize(12).font('Helvetica-Bold').text(formattedClosingBalance, { align: 'left' });
+
+
+
+    doc.fontSize(12)
+    .fillColor('green') 
+
+    .text(`${paymentDetails}`,50,550,{align: 'center' } )
+
 
     // Finalize PDF
     doc.end();
