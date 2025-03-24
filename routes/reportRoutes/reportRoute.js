@@ -7,8 +7,8 @@ const { verifyToken } = require('../../middleware/verifyToken.js');
 const checkAccess = require('../../middleware/roleVerify.js');
 const { ageAnalysisReport } = require('../../controller/reports/ageAnalysis.js');
 const router = express.Router();
-
-// Define the route for the debt report
+      
+// Define the route for the debt reportc
 router.get('/reports/customers-debt', getCurrentCustomersDebt);
 router.get('/reports/customers', getAllActiveCustomersReport);
 router.get('/reports/customers-debt-high', getCustomersWithHighDebt);

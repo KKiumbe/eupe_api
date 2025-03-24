@@ -88,5 +88,49 @@ const createCustomer = async (req, res) => {
     }
 };
 
+
+
+const deleteCustomer = async (req, res) => {
+  const { customerId } = req.params;
+
+  try {
+    // Check if the customer exists
+    const customer = await prisma.customer.findUnique({
+      where: { id: customerId },
+    });
+
+    if (!customer) {
+      return res.status(404).json({ error: 'Customer not found' });
+    }
+
+    // Delete related records first (cascading delete)
+    await prisma.invoice.deleteMany({
+      where: { customerId },
+    });
+    await prisma.receipt.deleteMany({
+      where: { customerId },
+    });
+    await prisma.garbageCollectionHistory.deleteMany({
+      where: { customerId },
+    });
+    await prisma.trashBagIssuance.deleteMany({
+      where: { customerId },
+    });
+
+    // Delete the customer
+    await prisma.customer.delete({
+      where: { id: customerId },
+    });
+
+    res.status(200).json({ message: 'Customer deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting customer:', error);
+    res.status(500).json({ error: 'Failed to delete customer' });
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+
+
 // Export the function for use in other parts of the app
-module.exports = { createCustomer };
+module.exports = { createCustomer ,deleteCustomer};
