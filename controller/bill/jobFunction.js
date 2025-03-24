@@ -1,23 +1,20 @@
-const Queue = require('bull');
 
 
+const schedule = require('node-schedule');
+const { generateInvoices } = require('./billGenerator.js');
 
-const invoiceQueue = new Queue('invoiceQueue', {
-    redis: {
-      host: '127.0.0.1', // Adjust if necessary
-      port: 6379,
-    },
+// Function to schedule invoice generation
+function scheduleInvoices() {
+  schedule.scheduleJob('0 0 1 * *', async () => {
+    console.log('Running scheduled job to generate invoices...');
+    try {
+      await generateInvoices();
+      console.log('Invoice generation job completed successfully.');
+    } catch (error) {
+      console.error('Error during invoice generation job:', error);
+    }
   });
+  console.log('Invoice generation job scheduled to run on the 1st of each month at midnight.');
+}
 
-// Queue for bulk SMS jobs
-const smsQueue = new Queue('smsQueue', {
-  redis: {
-    host: '127.0.0.1',
-    port: 6379,
-  },
-});
-
-module.exports = {
-  invoiceQueue,
-  smsQueue,
-};
+module.exports = { scheduleInvoices };

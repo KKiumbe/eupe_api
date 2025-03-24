@@ -23,7 +23,8 @@ const cookieParser = require('cookie-parser');
 
 const permissionsRoutes = require('./routes/permision/permissionRoute.js')
 const createTask = require('./routes/task/taskRoute.js')
-const mailerRoute = require('./routes/mailer/mailRoute.js')
+const mailerRoute = require('./routes/mailer/mailRoute.js');
+const { scheduleInvoices } = require('./controller/bill/jobFunction.js');
 
 const app = express();
 const PORT = process.env.SERVER_PORT;
@@ -67,6 +68,8 @@ app.use('/eupe', mailerRoute);
 // Start the HTTP server
 const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port : ${PORT}`);
+
+  scheduleInvoices()
 });
 
 

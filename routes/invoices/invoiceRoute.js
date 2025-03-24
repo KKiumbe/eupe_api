@@ -20,7 +20,7 @@ router.put('/invoices/cancel/:invoiceId/', verifyToken, checkAccess('Invoice','u
 // Route to create a manual invoice
 router.post('/invoices', verifyToken, checkAccess('Invoice','create'),createInvoice);
 
-router.post('/send-bulk-sms', addSmsJob);
+//router.post('/send-bulk-sms', addSmsJob);
 
 
 // Route to generate invoices for all active customers for a specified month
@@ -31,7 +31,7 @@ router.post('/invoices-generate-day',checkAccess('Invoice','create'), generateIn
 
 
 // Route to cancel system-generated invoices for a specific customer and month
-router.patch('/invoices/cancel',checkAccess('Invoice','update'), cancelSystemGenInvoices);
+//router.patch('/invoices/cancel',checkAccess('Invoice','update'), cancelSystemGenInvoices);
 
 router.post('/generate-invoices-by-month', async (req, res) => {
     try {
